@@ -8,8 +8,9 @@ Unlike controls.
 It has two modes:
 
 - `npm run audit` slowly checks historical posts (up to `FULL_AUDIT_LIMIT`).
-- `npm run check` checks only the newest 12 visible posts and emails you only
+- `npm run dailyaudit` checks only the newest 12 visible posts and emails you only
   when it sees an unliked post that it has not already reported.
+- `npm run check` is retained as an alias for the same daily workflow.
 
 Instagram does not provide a supported consumer API for this exact check, so
 page changes can require updating the detector. Any browser automation may also
@@ -53,6 +54,15 @@ as unliked. A post is marked `unknown` rather than guessed if Instagram's page
 does not expose an unambiguous Like/Unlike control.
 
 ## 4. Schedule a daily check
+
+To try the same review that the scheduled task will perform:
+
+```powershell
+npm run dailyaudit
+```
+
+By default it checks the newest 12 visible posts. Change `CHECK_LIMIT` in
+`.env` if you want a different daily limit.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install-task.ps1 -DailyTime "09:15"

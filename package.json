@@ -7,6 +7,7 @@
   "scripts": {
     "login": "node src/main.js --login",
     "check": "node src/main.js",
+    "dailyaudit": "node src/main.js",
     "audit": "node src/main.js --full-audit",
     "test-email": "node src/main.js --test-email",
     "test": "node --test"

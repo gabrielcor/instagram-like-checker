@@ -1,4 +1,10 @@
-const POST_PATH = /^\/(p|reel)\/[^/]+\/?$/;
+// Instagram currently emits both legacy paths (`/reel/<code>/`) and
+// owner-prefixed paths (`/<username>/reel/<code>/`) in profile grids.
+const POST_PATH = /^\/(?:[^/]+\/)?(?:p|reel)\/[^/]+\/?$/;
+
+export function isPostPath(pathname) {
+  return POST_PATH.test(pathname);
+}
 
 function randomBetween(min, max) {
   return Math.floor(min + Math.random() * (max - min + 1));
@@ -33,7 +39,7 @@ export async function collectPostUrls(page, profileUrl, limit, config) {
 
     for (const href of links) {
       const url = new URL(href, 'https://www.instagram.com');
-      if (url.hostname === 'www.instagram.com' && POST_PATH.test(url.pathname)) {
+      if (url.hostname === 'www.instagram.com' && isPostPath(url.pathname)) {
         found.add(`${url.origin}${url.pathname}`);
       }
       if (found.size >= limit) break;
@@ -58,6 +64,17 @@ export async function collectPostUrls(page, profileUrl, limit, config) {
 export async function inspectPost(page, url) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
+  // `main` appears before the post actions are hydrated. Wait for the
+  // full-size post Like/Unlike control, but preserve `unknown` if Instagram
+  // never renders one (deleted/restricted post or a future layout change).
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(
+      'main svg[aria-label="Like"], main svg[aria-label="Unlike"]',
+    )].some((icon) => {
+      const rect = icon.getBoundingClientRect();
+      return rect.width >= 20 && rect.height >= 20;
+    }),
+  undefined, { timeout: 15_000 }).catch(() => {});
 
   const result = await page.evaluate(() => {
     const visible = (element) => {
@@ -66,12 +83,18 @@ export async function inspectPost(page, url) {
       return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden';
     };
 
+    // The post action uses a 24px icon. Comment-level Like buttons use 16px
+    // icons, so size provides a stable distinction without relying on
+    // Instagram's frequently changing generated class names.
     const icons = [...document.querySelectorAll(
-      'main article svg[aria-label="Like"], main article svg[aria-label="Unlike"]',
-    )].filter((icon) => visible(icon) && !icon.closest('li, header, nav'));
+      'main svg[aria-label="Like"], main svg[aria-label="Unlike"]',
+    )].filter((icon) => {
+      const rect = icon.getBoundingClientRect();
+      return visible(icon) && rect.width >= 20 && rect.height >= 20;
+    });
 
     const labels = [...new Set(icons.map((icon) => icon.getAttribute('aria-label')))];
-    const time = document.querySelector('main article time[datetime]');
+    const time = document.querySelector('main time[datetime]');
     const description = document.querySelector('meta[property="og:description"]');
 
     let status = 'unknown';
