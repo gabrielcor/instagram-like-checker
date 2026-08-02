@@ -1,0 +1,22 @@
+{
+  "name": "instagram-like-checker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only, low-frequency Instagram like checker for one profile",
+  "scripts": {
+    "login": "node src/main.js --login",
+    "check": "node src/main.js",
+    "audit": "node src/main.js --full-audit",
+    "test-email": "node src/main.js --test-email",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "nodemailer": "^9.0.3",
+    "playwright": "^1.54.2"
+  }
+}
