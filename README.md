@@ -8,8 +8,9 @@ Unlike controls.
 It has two modes:
 
 - `npm run audit` slowly checks historical posts (up to `FULL_AUDIT_LIMIT`).
-- `npm run dailyaudit` checks only the newest 12 visible posts and emails you only
-  when it sees an unliked post that it has not already reported.
+- `npm run dailyaudit` checks only the newest 12 visible posts. It emails you
+  when it sees a newly unliked post, and also sends a Spanish all-clear email
+  when every checked post has your like.
 - `npm run check` is retained as an alias for the same daily workflow.
 
 Instagram does not provide a supported consumer API for this exact check, so
@@ -64,6 +65,11 @@ npm run dailyaudit
 By default it checks the newest 12 visible posts. Change `CHECK_LIMIT` in
 `.env` if you want a different daily limit.
 
+When every checked post has your like, the daily email says:
+
+- Subject: `Instagram like checker: no hay posts sin like`
+- Body: `Revisé los últimos posts y no hay nada sin like.`
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install-task.ps1 -DailyTime "09:15"
 ```
@@ -79,7 +85,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\uninstall-task.ps1
 - `CHECK_LIMIT=12`: number of newest visible posts checked each day.
 - `FULL_AUDIT_LIMIT=250`: maximum number checked by `npm run audit`.
 - `REMINDER_DAYS=0`: do not repeat alerts for a continuously-unliked post.
-- `NOTIFY_ON_ALL_CLEAR=true`: also email after runs that find nothing new.
+- `NOTIFY_ON_ALL_CLEAR=true`: also send the all-clear email after a full
+  historical `npm run audit`. Daily audits always send it when every checked
+  post is confirmed liked.
 - `HEADLESS=false`: show the scheduled browser while troubleshooting.
 
 The state file is `data/state.json`. Email credentials and the login profile are

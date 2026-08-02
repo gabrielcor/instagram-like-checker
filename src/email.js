@@ -43,12 +43,16 @@ export async function sendAlert(smtp, posts, targetUsername) {
   });
 }
 
-export async function sendAllClear(smtp, checked, targetUsername) {
+export const allClearMessage = {
+  subject: 'Instagram like checker: no hay posts sin like',
+  text: 'Revisé los últimos posts y no hay nada sin like.',
+};
+
+export async function sendAllClear(smtp) {
   await transport(smtp).sendMail({
     from: smtp.from,
     to: smtp.to,
-    subject: `Instagram check complete: no unliked posts found`,
-    text: `Checked ${checked} post(s) from @${targetUsername}; none were unliked.`,
+    ...allClearMessage,
   });
 }
 

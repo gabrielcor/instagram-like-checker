@@ -62,16 +62,24 @@ async function check() {
     });
     const state = await loadState(config.stateFile);
     const { next, notify } = mergeResults(state, results, { reminderDays: config.reminderDays });
+    const unlikedCount = results.filter((result) => result.status === 'unliked').length;
+    const unknownCount = results.filter((result) => result.status === 'unknown').length;
+    const dailyAllClear = !fullAudit && unlikedCount === 0 && unknownCount === 0;
+    const configuredAllClear = fullAudit && config.notifyOnAllClear && unlikedCount === 0 && unknownCount === 0;
 
     if (notify.length > 0) {
       await sendAlert(config.smtp, notify, config.targetUsername);
       markNotified(next, notify);
       console.log(`Email sent for ${notify.length} unliked post(s).`);
-    } else if (config.notifyOnAllClear) {
-      await sendAllClear(config.smtp, results.length, config.targetUsername);
+    } else if (dailyAllClear || configuredAllClear) {
+      await sendAllClear(config.smtp);
       console.log('All-clear email sent.');
+    } else if (unknownCount > 0) {
+      console.log(`No email sent because ${unknownCount} post(s) could not be classified safely.`);
+    } else if (unlikedCount > 0) {
+      console.log('Unliked posts remain, but they were already reported; no duplicate email sent.');
     } else {
-      console.log('No newly unliked posts found; no email sent.');
+      console.log('No unliked posts found; full-audit all-clear email is disabled.');
     }
 
     await saveState(config.stateFile, next);
