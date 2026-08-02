@@ -19,7 +19,7 @@ $Settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 45)
 $Principal = New-ScheduledTaskPrincipal `
     -UserId $env:USERNAME `
-    -LogonType InteractiveToken `
+    -LogonType Interactive `
     -RunLevel Limited
 
 Register-ScheduledTask `
