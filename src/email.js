@@ -26,6 +26,14 @@ function transport(smtp) {
   });
 }
 
+export function emailRecipients(smtp) {
+  return {
+    from: smtp.from,
+    to: smtp.to,
+    ...(smtp.cc ? { cc: smtp.cc } : {}),
+  };
+}
+
 export async function sendAlert(smtp, posts, targetUsername) {
   const rows = posts.map((post) => `
     <li style="margin-bottom:16px">
@@ -35,8 +43,7 @@ export async function sendAlert(smtp, posts, targetUsername) {
     </li>`).join('');
 
   await transport(smtp).sendMail({
-    from: smtp.from,
-    to: smtp.to,
+    ...emailRecipients(smtp),
     subject: `${posts.length} unliked Instagram post${posts.length === 1 ? '' : 's'} found`,
     text: `The checker found ${posts.length} unliked post(s) from @${targetUsername}:\n\n${posts.map((p) => p.url).join('\n')}`,
     html: `<p>The read-only checker found ${posts.length} post(s) from <strong>@${escapeHtml(targetUsername)}</strong> without your like.</p><ul>${rows}</ul>`,
@@ -50,16 +57,14 @@ export const allClearMessage = {
 
 export async function sendAllClear(smtp) {
   await transport(smtp).sendMail({
-    from: smtp.from,
-    to: smtp.to,
+    ...emailRecipients(smtp),
     ...allClearMessage,
   });
 }
 
 export async function sendTestEmail(smtp) {
   await transport(smtp).sendMail({
-    from: smtp.from,
-    to: smtp.to,
+    ...emailRecipients(smtp),
     subject: 'Instagram like checker: test email',
     text: 'Your Instagram like checker email settings work.',
   });

@@ -55,5 +55,6 @@ export const config = {
     pass: process.env.SMTP_PASS,
     from: process.env.EMAIL_FROM ?? process.env.SMTP_USER,
     to: process.env.EMAIL_TO,
+    cc: process.env.EMAIL_CC?.trim() || undefined,
   },
 };

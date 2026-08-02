@@ -30,6 +30,15 @@ Copy-Item .env.example .env
 Edit `.env`. For Gmail, enable two-step verification and create a Google App
 Password for `SMTP_PASS`; do not use your normal Google password.
 
+To copy another recipient on every alert, all-clear, and test email, add:
+
+```env
+EMAIL_CC=another.person@example.com
+```
+
+Multiple CC recipients may be separated with commas. Leave `EMAIL_CC` blank to
+send without a CC recipient.
+
 ## 2. Save your Instagram login
 
 ```powershell
